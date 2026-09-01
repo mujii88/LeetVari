@@ -34,6 +34,4 @@ func Dbinit() {
 	}
 
 	log.Println("Database connection successful")
-
-
 }
