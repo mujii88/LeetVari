@@ -2,7 +2,7 @@ package db
 
 import (
 	"database/sql"
-	"log"
+	"errors"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -12,26 +12,43 @@ import (
 
 var DB *sql.DB
 
-func Dbinit() {
+type DB_conn struct {
+	Error error
+
+}
+
+func Dbinit() DB_conn {
 
 	if err:=godotenv.Load(); err!=nil{
-		log.Println("no .env file found, looking for system environment variables")
+		return DB_conn {
+			Error: err,
+		}
 	}
 
 	connStr:=os.Getenv("DATABASE_URL")
 	if connStr == "" {
-		log.Fatal("DATABASE_URL is not set in .env")
+		return DB_conn {
+			Error: errors.New("DATABASE_URL is not set in .env"),
+		}
 	}
 
 	var err error
 	DB,err=sql.Open("postgres",connStr)
 	if err!=nil{
-		log.Fatal("Failed to open database:",err)
+		return DB_conn {
+			Error: err,
+		}
 	}
 
 	if err:=DB.Ping(); err!=nil{
-		log.Fatal("Database unreachable:",err)
+		return DB_conn {
+			Error: err,
+		}
 	}
 
-	log.Println("Database connection successful")
+
+	return DB_conn{
+		Error: nil,
+	}
+
 }
